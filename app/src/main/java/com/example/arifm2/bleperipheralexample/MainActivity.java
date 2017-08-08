@@ -55,18 +55,19 @@ public class MainActivity extends AppCompatActivity {
         checkerForPermission();
         btManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         btAdapter = btManager.getAdapter();
-//////////////////////////////////////////////////////////////////////////creating service and charahctericistic
+/////////////////////////////////creating service and characteristic///////////////////////////////
         mBluetoothGattService = new BluetoothGattService(SERVICE_UUID,
                 BluetoothGattService.SERVICE_TYPE_PRIMARY);
         mBluetoothGattCharacteristic =
                 new BluetoothGattCharacteristic(Characteristic_UUID,
-                        BluetoothGattCharacteristic.PROPERTY_READ | BluetoothGattCharacteristic.PROPERTY_NOTIFY,
+                        BluetoothGattCharacteristic.PROPERTY_READ |
+                        BluetoothGattCharacteristic.PROPERTY_NOTIFY,
                         BluetoothGattCharacteristic.PERMISSION_READ);
         mBluetoothGattService.addCharacteristic(mBluetoothGattCharacteristic);
 
-        btn=(Button)findViewById(R.id.button);
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+        btn=(Button)findViewById(R.id.button);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -78,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-//////////////////////////////////////////////////////////////////////////adding service to gatt server
+////////////////////////////////////////////////////////adding service to gatt server///////////////
             mGattServer = btManager.openGattServer(this,  mGattServerCallback);
         if (mGattServer == null) {
             return;
@@ -92,8 +93,19 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
             super.onConnectionStateChange(device, status, newState);
-            Log.d(getClass().getName() ,device.getAddress());
+            Log.d(getClass().getName() ,device.getAddress()+" "+device.getName());
             clientDevice=device;
+
+        }
+
+        @Override
+        public void onCharacteristicReadRequest(BluetoothDevice device, int requestId, int offset, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicReadRequest(device, requestId, offset, characteristic);
+            Log.d(getClass().getName() ,characteristic.getUuid().toString());
+            mBluetoothGattCharacteristic.setValue(50,
+                    BluetoothGattCharacteristic.FORMAT_UINT8, /* offset */ 0);
+            mGattServer.sendResponse(device, requestId, BluetoothGatt.GATT_SUCCESS,
+                    offset, characteristic.getValue());
 
         }
     };
